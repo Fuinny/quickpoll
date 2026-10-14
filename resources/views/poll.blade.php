@@ -5,49 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Quick Eat Poll</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: #f4f5f7; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-
-        .poll-card { background: white; padding: 28px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); width: 100%; max-width: 420px; }
-        h2 { margin-bottom: 20px; font-size: 1.3rem; color: #1e293b; text-align: center; }
-
-        /* Voting buttons mode */
-        .vote-btn {
-            width: 100%;
-            padding: 14px 18px;
-            margin-bottom: 10px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            background: white;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #334155;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: left;
-        }
-        .vote-btn:hover { border-color: #3b82f6; background: #eff6ff; transform: translateY(-1px); }
-
-        /* Results mode (Bar / Columns) */
-        .result-row { margin-bottom: 14px; }
-        .result-label { display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 600; color: #334155; margin-bottom: 6px; }
-        .bar-container { background: #e2e8f0; border-radius: 8px; height: 32px; overflow: hidden; position: relative; }
-        .bar-fill { height: 100%; background: #3b82f6; width: 0%; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 8px; }
-        .user-picked .bar-fill { background: #10b981; } /* Highlight user selection green */
-
-        .vote-count-text { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; font-weight: bold; color: #1e293b; }
-
-        .reset-btn { margin-top: 20px; background: none; border: none; color: #94a3b8; font-size: 0.8rem; width: 100%; cursor: pointer; text-decoration: underline; }
-        .reset-btn:hover { color: #64748b; }
-    </style>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light d-flex justify-content-center align-items-center vh-100 p-3">
 
-    <div class="poll-card">
-        <h2 id="question">What should we eat?</h2>
+    <div class="card shadow border-0 p-4 w-100" style="max-width: 420px; border-radius: 16px;">
+        <h2 id="question" class="fs-5 fw-bold text-dark text-center mb-4">What should we eat?</h2>
         <div id="poll-body"></div>
-        <button class="reset-btn" onclick="resetVote()">Reset local vote (Testing)</button>
+        <button class="btn btn-link text-muted text-decoration-underline w-100 mt-3 p-0 shadow-none" style="font-size: 0.8rem;" onclick="resetVote()">Reset local vote (Testing)</button>
     </div>
 
     <script>
@@ -78,15 +44,19 @@
                     const isUserPick = opt.id === userChoice;
 
                     const row = document.createElement('div');
-                    row.className = `result-row ${isUserPick ? 'user-picked' : ''}`;
+                    row.className = 'mb-3';
                     row.innerHTML = `
-                        <div class="result-label">
-                            <span>${opt.text} ${isUserPick ? '✓ (You)' : ''}</span>
+                        <div class="d-flex justify-content-between fw-semibold text-secondary mb-1" style="font-size: 0.95rem;">
+                            <span>${opt.text} ${isUserPick ? '<span class="text-success fw-bold">✓ (You)</span>' : ''}</span>
                             <span>${percent}%</span>
                         </div>
-                        <div class="bar-container">
-                            <div class="bar-fill" style="width: ${percent}%;"></div>
-                            <span class="vote-count-text">${opt.votes} vote${opt.votes !== 1 ? 's' : ''}</span>
+                        <div class="progress bg-secondary-subtle position-relative" style="height: 32px; border-radius: 8px;">
+                            <div class="progress-bar ${isUserPick ? 'bg-success' : 'bg-primary'}"
+                                 style="width: ${percent}%; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 8px;">
+                            </div>
+                            <span class="position-absolute end-0 top-50 translate-middle-y pe-3 text-dark fw-bold" style="font-size: 0.85rem;">
+                                ${opt.votes} vote${opt.votes !== 1 ? 's' : ''}
+                            </span>
                         </div>
                     `;
                     container.appendChild(row);
@@ -96,7 +66,8 @@
                 // --- DISPLAY VOTING BUTTONS ---
                 poll.options.forEach(opt => {
                     const btn = document.createElement('button');
-                    btn.className = 'vote-btn';
+                    btn.className = 'btn btn-outline-secondary w-100 text-start py-3 px-3 mb-2 fw-semibold rounded-3';
+                    btn.style.borderColor = '#e2e8f0';
                     btn.innerText = opt.text;
                     btn.onclick = () => castVote(opt.id);
                     container.appendChild(btn);
@@ -117,7 +88,6 @@
 
         function resetVote() {
             localStorage.removeItem('voted_' + POLL_ID);
-            // Revert user's vote count if they reset for testing
             render();
         }
 
